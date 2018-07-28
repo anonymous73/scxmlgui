@@ -30,29 +30,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.prefs.Preferences;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
@@ -1090,11 +1070,24 @@ public class SCXMLGraphEditor extends JPanel
 		
 		public ValidationWarningStatusPane() {
 			//Create the list and put it in a scroll pane.
+			//balavivek
 			scxmlErrorsList=buildValidationWarningGUI();
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-			add(new JLabel("Validation errors:"));
-			add(new JScrollPane(scxmlErrorsList));
-			
+			add(new JLabel("Code Editor:"));
+			//add(new JScrollPane(scxmlErrorsList));
+			JTextArea display = new JTextArea ( 16, 58 );
+			add(new JScrollPane(display));
+			//scroll.setVerticalScrollBarPolicy ( ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS );
+			//Add Textarea in to middle panel
+			//middlePane.add ( scroll );
+
+			// My code
+			//JFrame frame = new JFrame ();
+			//frame.add ( middlePanel );
+			//frame.pack ();
+			//frame.setLocationRelativeTo ( null );
+			//frame.setVisible ( true );
+
 			listSelectorHandler=new ValidationCellSelector(scxmlErrorsList, graphComponent);
 		}
 		private JList buildValidationWarningGUI() {

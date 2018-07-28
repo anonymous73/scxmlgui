@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/fsm-editor/fsm-editor.iml" filepath="$PROJECT_DIR$/fsm-editor/fsm-editor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jgraphx/jgraphx.iml" filepath="$PROJECT_DIR$/jgraphx/jgraphx.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scxmlgui.iml" filepath="$PROJECT_DIR$/scxmlgui.iml" />
+    </modules>
+  </component>
+</project>

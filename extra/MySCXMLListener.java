@@ -1,17 +1,16 @@
 package edu.usc.ict.simcoach.dialogue.scxml;
 
+import org.apache.commons.scxml.SCXMLListener;
+import org.apache.commons.scxml.model.Transition;
+import org.apache.commons.scxml.model.TransitionTarget;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import org.apache.commons.scxml.SCXMLListener;
-import org.apache.commons.scxml.model.Transition;
-import org.apache.commons.scxml.model.TransitionTarget;
 
 public class MySCXMLListener extends Thread implements SCXMLListener {
 
