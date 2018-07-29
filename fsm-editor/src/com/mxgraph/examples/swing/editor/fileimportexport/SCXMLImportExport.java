@@ -26,6 +26,7 @@ import org.xml.sax.SAXException;
 import com.mxgraph.examples.config.SCXMLConstraints;
 import com.mxgraph.examples.config.SCXMLConstraints.RestrictedState;
 import com.mxgraph.examples.swing.SCXMLGraphEditor;
+import com.mxgraph.examples.swing.SCXMLGraphEditor.ValidationWarningStatusPane;
 import com.mxgraph.examples.swing.editor.fileimportexport.OutSource.OUTSOURCETYPE;
 import com.mxgraph.examples.swing.editor.scxml.SCXMLFileChoser;
 import com.mxgraph.examples.swing.editor.scxml.SCXMLGraph;
@@ -429,11 +430,22 @@ public class SCXMLImportExport implements IImportExport {
 	}
 	public SCXMLNode readSCXMLFileContentAndAttachAsChildrenOf(SCXMLGraphEditor editor, String filename,SCXMLNode parent, SCXMLConstraints restrictedConstraints) throws Exception {
 		System.out.println("Parsing file: "+filename);
+		SCXMLGraphEditor scxmlGraphEditor = new SCXMLGraphEditor();
+		String out = scxmlGraphEditor.appendfile(filename);
+		ValidationWarningStatusPane validationWarningStatusPane = new ValidationWarningStatusPane();
+		String text = "Test if the editor is working";
+		validationWarningStatusPane.actionPerform(text);
+
+
+
+
+		//.ValidationWarningStatusPane.appendfile(fileName);
 		File file=new File(filename);
 		Document doc = mxUtils.parseXMLFile(file,false,false);
 		doc.getDocumentElement().normalize();
+
 		SCXMLNode rootNode=getNodeHier(editor, doc.getDocumentElement(),parent,file.getParentFile(), restrictedConstraints);
-		System.out.println("Done reading file");
+		System.out.println("Done reading file"+doc.getDocumentElement()+ "editor: "+editor+"parent"+parent+"file.getParentFile()"+file.getParentFile()+"restrictedConstraints"+restrictedConstraints);
 		return rootNode;
 	}
 	public void readInGraph(SCXMLGraph graph, String filename, boolean ignoreStoredLayout, SCXMLConstraints restrictedConstraints) throws Exception {
@@ -466,6 +478,8 @@ public class SCXMLImportExport implements IImportExport {
 		graph.getModel().setRoot(gr);
 		graph.setDefaultParent(null);
 		graph.clearOutsourcedIndex();
+
+
 
 		System.out.println("Populating graph."); 
 		populateGraph(graph,ignoreStoredLayout);

@@ -1,11 +1,7 @@
 package com.mxgraph.examples.swing;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
+import java.awt.*;
 import java.awt.Dialog.ModalityType;
-import java.awt.GraphicsEnvironment;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -15,12 +11,11 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -36,8 +31,13 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import javax.xml.bind.JAXBContext;
+import javax.xml.parsers.ParserConfigurationException;
 
+import com.mxgraph.io.mxCodec;
+import com.mxgraph.util.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -86,25 +86,84 @@ import com.mxgraph.model.mxIGraphModel;
 import com.mxgraph.swing.mxGraphOutline;
 import com.mxgraph.swing.handler.mxKeyboardHandler;
 import com.mxgraph.swing.handler.mxRubberband;
-import com.mxgraph.util.StringUtils;
-import com.mxgraph.util.mxConstants;
-import com.mxgraph.util.mxEvent;
-import com.mxgraph.util.mxEventObject;
 import com.mxgraph.util.mxEventSource.mxIEventListener;
-import com.mxgraph.util.mxRectangle;
-import com.mxgraph.util.mxResources;
-import com.mxgraph.util.mxUndoManager;
-import com.mxgraph.util.mxUndoableEdit;
 import com.mxgraph.util.mxUndoableEdit.mxUndoableChange;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxMultiplicity;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+import xmleditorkit.XMLEditorKit;
 
 
 public class SCXMLGraphEditor extends JPanel
 {
 	public Preferences preferences=Preferences.userRoot();
-	private ValidationWarningStatusPane validationStatus;
+	public ValidationWarningStatusPane validationStatus;
 	private ImportExportPicker iep;
+
+	public String getCodeDisplay() {
+		return codeDisplay;
+	}
+
+	public void setCodeDisplay(String codeDisplay) {
+		this.codeDisplay = codeDisplay;
+	}
+
+	public String codeDisplay = null ;
+
+	public static SimpleAttributeSet BRACKET_ATTRIBUTES=new SimpleAttributeSet();
+	public static SimpleAttributeSet TAGNAME_ATTRIBUTES=new SimpleAttributeSet();
+	public static SimpleAttributeSet ATTRIBUTENAME_ATTRIBUTES=new SimpleAttributeSet();
+	public static SimpleAttributeSet ATTRIBUTEVALUE_ATTRIBUTES=new SimpleAttributeSet();
+	public static SimpleAttributeSet PLAIN_ATTRIBUTES=new SimpleAttributeSet();
+	public static SimpleAttributeSet COMMENT_ATTRIBUTES=new SimpleAttributeSet();
+	static {
+		StyleConstants.setBold(TAGNAME_ATTRIBUTES, true);
+		StyleConstants.setForeground(TAGNAME_ATTRIBUTES, Color.GREEN.darker());
+
+		StyleConstants.setBold(ATTRIBUTENAME_ATTRIBUTES, true);
+
+		StyleConstants.setItalic(ATTRIBUTEVALUE_ATTRIBUTES, true);
+		StyleConstants.setForeground(ATTRIBUTEVALUE_ATTRIBUTES, Color.BLUE);
+
+		StyleConstants.setFontSize(PLAIN_ATTRIBUTES, StyleConstants.getFontSize(PLAIN_ATTRIBUTES)-1);
+		StyleConstants.setForeground(PLAIN_ATTRIBUTES, Color.DARK_GRAY);
+
+		StyleConstants.setFontSize(COMMENT_ATTRIBUTES, StyleConstants.getFontSize(COMMENT_ATTRIBUTES)-1);
+		StyleConstants.setForeground(COMMENT_ATTRIBUTES, Color.GRAY);
+		StyleConstants.setItalic(COMMENT_ATTRIBUTES, true);
+	}
+
+
+	public SCXMLGraphEditor() {
+
+	}
+	//public JEditorPane editorPane;
+
+
+
+	public String appendfile(String filename) throws IOException, SAXException, ParserConfigurationException {
+		System.out.println("appendfile: "+filename);
+
+		//File file=new File(filename);
+		//editorPane.setEditorKit(new XMLEditorKit());
+
+		ByteArrayOutputStream out = new ByteArrayOutputStream(1000000);
+		InputStream in = new BufferedInputStream(new FileInputStream(filename));
+		int c;
+		while ((c = in.read()) != -1) {
+			out.write(c);
+		}
+		in.close();
+
+		//editorPane.setText(out.toString());
+		//editorPane.setText("test");
+		System.out.println(out.toString());
+		setCodeDisplay(out.toString());
+		return out.toString();
+	}
+
+
 	public ImportExportPicker getIOPicker() {return iep;}
 	public SCXMLEditorMenuBar menuBar;
 
@@ -133,7 +192,7 @@ public class SCXMLGraphEditor extends JPanel
 	/**
 	 * the zoomed in view of the graph (just a small portion of the outline (typically))
 	 */
-	protected SCXMLGraphComponent graphComponent;
+	protected static SCXMLGraphComponent graphComponent;
 
 	/**
 	 * a summary view of the entire graph
@@ -303,8 +362,9 @@ public class SCXMLGraphEditor extends JPanel
 			file2importer.put(fileName, ie=new SCXMLImportExport());								
 			// read the graph, this will throw an exception if something goes wrong
 			System.out.println("reading "+fileName);
-			ie.readInGraph(ig=new SCXMLGraph(),fileName,preferences.getBoolean(SCXMLFileChoser.FileChoserCustomControls.PREFERENCE_IGNORE_STORED_LAYOUT, true), getRestrictedStatesConfig());
-			ig.setEditor(this);
+            ie.readInGraph(ig=new SCXMLGraph(),fileName,preferences.getBoolean(SCXMLFileChoser.FileChoserCustomControls.PREFERENCE_IGNORE_STORED_LAYOUT, true), getRestrictedStatesConfig());
+			//file input here
+            ig.setEditor(this);
 			file2graph.put(fileName, ig);
 		}
 		assert((ig!=null) && (ie!=null));
@@ -508,6 +568,7 @@ public class SCXMLGraphEditor extends JPanel
 		 * */
 		restrictedStatesConfig = null;
 		InputStream fileInputStream = null;
+
 		try {
 			File file = new File("restrictedStates.xml");
 			fileInputStream = new FileInputStream(file);
@@ -944,12 +1005,6 @@ public class SCXMLGraphEditor extends JPanel
 		return bind(name, action, null);
 	}
 
-	/**
-	 * 
-	 * @param name
-	 * @param action
-	 * @return
-	 */
 	@SuppressWarnings("serial")
 	public AbstractActionWrapper bind(String name, final Action a, String iconUrl)
 	{
@@ -1062,12 +1117,15 @@ public class SCXMLGraphEditor extends JPanel
 		public void windowOpened(WindowEvent arg0) {
 		}
 	}
-	
-	private class ValidationWarningStatusPane extends JPanel implements ListSelectionListener {
+
+	public static class ValidationWarningStatusPane extends JPanel implements ListSelectionListener {
 		private JList scxmlErrorsList;
 		private final DefaultListModel listModel=new DefaultListModel();
 		private ListCellSelector listSelectorHandler;
-		
+
+		public JTextArea editorPane;
+		private final static String newline = "\n";
+
 		public ValidationWarningStatusPane() {
 			//Create the list and put it in a scroll pane.
 			//balavivek
@@ -1075,21 +1133,22 @@ public class SCXMLGraphEditor extends JPanel
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 			add(new JLabel("Code Editor:"));
 			//add(new JScrollPane(scxmlErrorsList));
-			JTextArea display = new JTextArea ( 16, 58 );
-			add(new JScrollPane(display));
-			//scroll.setVerticalScrollBarPolicy ( ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS );
-			//Add Textarea in to middle panel
-			//middlePane.add ( scroll );
-
-			// My code
-			//JFrame frame = new JFrame ();
-			//frame.add ( middlePanel );
-			//frame.pack ();
-			//frame.setLocationRelativeTo ( null );
-			//frame.setVisible ( true );
-
+			editorPane = new JTextArea(50, 50);
+			editorPane.setEditable(true);
+			add(new JScrollPane(editorPane));
+			//String text = "Test if the editor is working";
+			//actionPerform(text);
+			//editorPane.setText("text");
 			listSelectorHandler=new ValidationCellSelector(scxmlErrorsList, graphComponent);
 		}
+		public void actionPerform(String text) {
+			System.out.println("actionPerform file: "+text);
+			editorPane.append(text);
+			//Make sure the new text is visible, even if there
+			//was a selection in the text area.
+			editorPane.setCaretPosition(editorPane.getDocument().getLength());
+		}
+
 		private JList buildValidationWarningGUI() {
 			JList list = new JList(listModel);
 			list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);

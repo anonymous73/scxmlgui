@@ -10,5 +10,16 @@
     <orderEntry type="library" name="lib" level="project" />
     <orderEntry type="library" name="fsm-editor" level="project" />
     <orderEntry type="module" module-name="jgraphx" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../lib/xmleditorkit.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/../lib/xmleditorkit.jar!/src" />
+        </SOURCES>
+      </library>
+    </orderEntry>
   </component>
 </module>
